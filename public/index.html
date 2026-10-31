@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Amazon Relay</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0b4f5c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Amazon Relay">
+<link rel="apple-touch-icon" href="/apple-touch-icon.jpg">
+<link rel="icon" type="image/png" href="/apple-touch-icon.jpg">
+<style>
+:root{--teal:#0b4f5c;--blue:#1a73e8;--green:#0f9d78;--bg:#fff;--bg2:#eef0f2;--line:#e1e4e8;--tx:#111;--tx2:#6b7280;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#15191c;--bg2:#0e1113;--line:#2a3035;--tx:#f2f4f5;--tx2:#9aa3ab;--blue:#4c9aff;--green:#2fcf9f}}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg2);color:var(--tx);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--teal);z-index:10}
+#app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg)}
+header{background:var(--teal);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+header h1{margin:0;font-size:18px;font-weight:600;flex:1;text-align:center}
+header h1{display:flex;align-items:center;justify-content:center;gap:8px}.hlogo{height:22px;width:auto;flex:none}
+header h1{display:flex;align-items:center;justify-content:center;gap:8px}.hlogo{height:22px;width:auto;flex:none}
+header.big{flex-direction:column;align-items:flex-start;padding-bottom:28px}header.big h1{font-size:30px;text-align:left}
+.burger{background:none;border:0;color:#fff;font-size:26px;line-height:1;padding:4px;cursor:pointer}.sp{width:34px}
+.demo{background:#fff4d6;color:#7a5b00;font-size:13px;padding:8px 16px;text-align:center}
+.msg{padding:12px 16px;font-size:12px}.msg.err{background:#0b534a;color:#9b1c1c}.msg.ok{background:#e3f7ef;color:#0b6b50}
+.card{padding:16px;border-bottom:1px solid var(--line)}.row{display:flex;justify-content:space-between;gap:12px}
+.city{font-weight:700;font-size:17px}.sub{color:var(--tx2);font-size:14px}
+.pay{text-align:right}.pay b{display:block;color:var(--green);font-size:24px}
+.info{margin:12px 0;font-size:14px;color:var(--tx2)}
+.act{display:flex;gap:10px;align-items:center}
+.star{width:60px;height:60px;border:1px solid var(--line);background:var(--bg);color:var(--tx);border-radius:8px;font-size:26px;cursor:pointer}
+.btn{flex:1;height:60px;border:0;border-radius:8px;background:var(--blue);color:#fff;font-size:18px;font-weight:600;cursor:pointer}.btn:disabled{opacity:.5}
+.btn.out{background:none;border:2px solid var(--teal);color:var(--teal);height:48px;font-size:16px;flex:none;padding:0 18px}
+@media (prefers-color-scheme:dark){.btn.out{border-color:#5fb7c6;color:#5fb7c6}}
+.pad{padding:20px 16px}h2{margin:0 0 12px;font-size:22px}
+.empty{text-align:center;padding:36px 16px 140px}.empty b{display:block;font-size:19px;margin:12px 0 6px}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;border-bottom:1px solid var(--line)}
+.tab{border:1px solid var(--line);background:var(--bg);color:var(--tx);border-radius:20px;padding:6px 14px;white-space:nowrap;cursor:pointer}.tab.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+label{display:block;font-weight:600;margin:14px 0 6px}
+input{width:100%;height:46px;border:1px solid var(--line);border-radius:6px;padding:0 12px;font-size:16px;background:var(--bg);color:var(--tx)}input:disabled{opacity:.7}
+.ok{color:var(--green);font-size:34px}.warn{color:#b45309;font-size:34px}.sec{margin-top:28px}
+details{border-bottom:1px solid var(--line);padding:12px 0}summary{font-weight:600;cursor:pointer}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:none}
+.drawer{position:fixed;top:0;bottom:0;left:0;width:270px;max-width:80%;background:#0b2e33;z-index:21;transform:translateX(-100%);padding:calc(env(safe-area-inset-top,0px) + 20px) 0}
+body.open .scrim{display:block}body.open .drawer{transform:none}
+.drawer a{display:block;padding:15px 22px;color:#ffffff;font-size:17px;border-bottom:1px solid #1d4a52;cursor:pointer}
+.drawer .dlogo{padding:0 22px 18px;display:block}.drawer .dlogo img{height:26px;display:block}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:30;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:480px;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));border-radius:14px 14px 0 0}
+.auth{max-width:420px;margin:0 auto;padding:24px 16px 40px}.logo{font-size:28px;font-weight:700;color:var(--teal);text-align:center;margin:12px 0 20px}
+.box{border:1px solid var(--line);border-radius:8px;padding:20px}.box h1{margin:0 0 14px;font-size:26px;font-weight:500}
+.cont{width:100%;height:46px;border:0;border-radius:4px;background:#0b5a66;color:#fff;font-size:16px;font-weight:600;cursor:pointer;margin-top:16px}.cont.alt{background:#55b8b0;color:#06302d;font-weight:500;margin-top:0}
+.small{font-size:13px;color:var(--tx2);margin-top:14px}.lnk{color:#0a66c2;cursor:pointer;text-decoration:underline}@media (prefers-color-scheme:dark){.lnk{color:#6cb0ff}}
+.dv{display:flex;align-items:center;gap:10px;color:var(--tx2);font-size:13px;margin:22px 0 14px}.dv::before,.dv::after{content:"";flex:1;height:1px;background:var(--line)}
+.foot{text-align:center;color:var(--tx2);font-size:12px;margin-top:32px}.chk{display:flex;gap:8px;align-items:flex-start;margin-top:14px;font-size:14px}.chk input{width:auto;height:auto;margin-top:3px}.hp{position:absolute;left:-9999px;opacity:0}
+.who{display:flex;justify-content:space-between;margin-bottom:6px;font-size:14px}
+</style>
+</head>
+<body>
+<div class="scrim" onclick="menu(0)"></div><nav class="drawer" id="nav"></nav><div id="app"></div>
+<script>
+var deferred=null,standalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true,isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferred=e;render()});
+window.addEventListener('appinstalled',function(){deferred=null;render()});
+function canInstall(){return !standalone&&(!!deferred||isIOS)}
+function install(){menu(0);if(deferred){deferred.prompt();deferred.userChoice.then(function(){deferred=null;render()})}else{S.msg={t:'ok',m:'To install on iPhone: tap the Share button in Safari, then “Add to Home Screen”.'};render()}}
+if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})});
+var S={auth:'email',ident:'',form:null,scr:'home',me:null,loads:[],book:[],favs:[],profile:null,filter:'upcoming',msg:null,loading:false};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function api(method,url,body){
+  return fetch(url,{method:method,headers:{'Content-Type':'application/json','X-Requested-With':'flexdrive'},body:body?JSON.stringify(body):undefined,credentials:'same-origin'})
+  .then(function(r){return r.json().catch(function(){return {}}).then(function(j){
+    if(r.status===401&&url!=='/api/login'){S.me=null;render();throw {handled:true}}
+    if(!r.ok)throw {status:r.status,message:j.error||'Something went wrong. Please try again.'};return j})},
+  function(){throw {message:'No connection. Check your network and try again.'}});
+}
+function fail(e){if(e&&e.handled)return;S.msg={t:'err',m:(e&&e.message)||'Something went wrong.'};render()}
+function money(n){return '$'+(Math.round(n*100)/100).toLocaleString('en-US')}
+function dt(s){return new Date(s).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}
+function dur(a,b){var h=Math.round((Date.parse(b)-Date.parse(a))/36e5);return h+' h'}
+function menu(o){document.body.classList.toggle('open',!!o)}
+function go(s){S.scr=s;S.msg=null;menu(0);load();window.scrollTo(0,0)}
+function hdr(t){return '<header><button class="burger" aria-label="Menu" onclick="menu(1)">☰</button><h1><img class="hlogo" src="/logo-mark.svg" alt=""><span>'+t+'</span></h1><span class="sp"></span></header>'}
+function msg(){return S.msg?'<div class="msg '+S.msg.t+'">'+esc(S.msg.m)+'</div>':''}
+function loadCard(l){
+  return '<div class="card"><div class="row"><div><div class="city">'+esc(l.city)+', '+esc(l.state)+'</div>'+(l.station?'<div class="sub">Station '+esc(l.station)+'</div>':'')+'<div class="sub">'+dt(l.start)+' → '+dt(l.end)+'</div><div class="sub">Duration '+dur(l.start,l.end)+'</div></div><div class="pay"><b>'+money(l.total)+'</b><span class="sub">'+money(l.perBlock)+' / block</span></div></div>'
+  +'<div class="info"><div>'+l.blocks+' blocks'+(l.hours?' · '+esc(l.hours):'')+'</div><div>'+(l.team?'Team · '+l.drivers+' drivers':'Solo · 1 driver')+'</div>'+(l.truck?'<div>'+esc(l.truck)+'</div>':'')+(l.equipment?'<div>Equipment: '+esc(l.equipment)+'</div>':'')+(l.demo?'<div>Demo load</div>':'')+'</div>'
+  +'<div class="act"><button class="star" aria-label="Favorite" onclick="fav('+l.id+','+(l.favorite?1:0)+')">'+(l.favorite?'★':'☆')+'</button><button class="btn" '+(l.available?'':'disabled')+' onclick="ask('+l.id+')">'+(l.available?'Book':'Unavailable')+'</button></div></div>'}
+function bookCard(b){var l=b.load,lbl={pending:'Pending approval',in_progress:'In progress'}[b.status]||b.status;return '<div class="card"><div class="row"><div><div class="sub">Booking #'+b.id+'</div><div class="city">'+esc(l.city)+', '+esc(l.state)+'</div><div class="sub">'+dt(l.start)+'</div><div class="sub">'+esc(l.truck)+(l.equipment?' · '+esc(l.equipment):'')+'</div></div><div class="pay"><b>'+money(l.total)+'</b><span class="sub">'+esc(lbl)+'</span></div></div>'+(b.status==='upcoming'||b.status==='pending'?'<div style="margin-top:12px"><button class="btn out" onclick="cancelB('+b.id+')">Request cancellation</button></div>':'')+'</div>'}
+function fav(id,on){api(on?'DELETE':'PUT','/api/favorites/'+id).then(function(){return load()}).catch(fail)}
+function ask(id){var l=S.loads.concat(S.favs).filter(function(x){return x.id===id})[0];if(!l)return;
+  var m=document.createElement('div');m.className='modal';m.id='m';
+  m.innerHTML='<div class="sheet"><h2>Confirm booking</h2><p>'+esc(l.city)+', '+esc(l.state)+' · '+dt(l.start)+'<br>Total <b style="color:var(--green)">'+money(l.total)+'</b> ('+l.blocks+' blocks)</p><div class="act"><button class="btn out" onclick="closeM()">Cancel</button><button class="btn" onclick="doBook('+id+')">Confirm</button></div></div>';document.body.appendChild(m)}
+function closeM(){var m=document.getElementById('m');if(m)m.remove()}
+function doBook(id){closeM();api('POST','/api/bookings',{loadId:id}).then(function(){S.msg={t:'ok',m:'Booking request sent. It needs approval before it is confirmed — check My Bookings.'};return load()}).catch(function(e){fail(e);load(true)})}
+function cancelB(id){api('POST','/api/bookings/'+id+'/cancel').then(function(){S.msg={t:'ok',m:'Booking cancelled.'};return load()}).catch(fail)}
+function saveP(){api('PATCH','/api/profile',{phone:document.getElementById('ph').value,email:document.getElementById('em').value}).then(function(){S.msg={t:'ok',m:'Contact information saved.'};return load()}).catch(fail)}
+function sendS(){api('POST','/api/support',{message:document.getElementById('sm').value}).then(function(){S.msg={t:'ok',m:'Your request was sent. Support will reply by email.'};render()}).catch(fail)}
+function logout(){api('POST','/api/logout').catch(function(){}).then(function(){S.me=null;S.msg=null;S.auth='email';S.ident='';menu(0);render()})}
+function cont(){var v=document.getElementById('aid').value.trim();if(!v){S.msg={t:'err',m:'Enter your mobile number or email.'};render();return}S.msg=null;S.ident=v;S.auth='password';render()}
+function login(){api('POST','/api/login',{email:S.ident,password:document.getElementById('lp').value}).then(function(r){if(r.role!=='driver'){return api('POST','/api/logout').then(function(){S.msg={t:'err',m:'This app is for drivers only.'};S.auth='email';render()})}S.me=r;S.msg=null;S.auth='email';load()}).catch(fail)}
+function register(){var g=function(i){return document.getElementById(i)};
+ S.form={first:g('rf').value.trim(),last:g('rl').value.trim(),email:g('re').value.trim(),phone:g('rph').value.trim(),licenseNo:g('rn').value.trim(),licenseExp:g('rx').value};
+ var pw=g('rp').value;
+ if(pw!==g('rc').value){S.msg={t:'err',m:'Passwords do not match.'};render();return}
+ if(!g('rt').checked){S.msg={t:'err',m:'Please accept the terms to continue.'};render();return}
+ var b=Object.assign({},S.form,{password:pw,acceptTerms:true,website:g('rw').value});
+ api('POST','/api/register',b).then(function(r){S.me=r;S.form=null;S.auth='email';S.msg=S.msg=null;load()}).catch(fail)}
+var V={
+ home:function(){var up=S.book.filter(function(b){return b.status==='upcoming'||b.status==='in_progress'});
+  return '<header class="big"><button class="burger" aria-label="Menu" onclick="menu(1)">☰</button><h1 style="justify-content:flex-start"><span>Hi, '+esc(S.me.first)+'!</span></h1></header><div class="pad"><h2>My schedule</h2></div>'+msg()+(up.length?up.map(bookCard).join(''):'<div class="empty"><img src="/empty-truck.png" alt="" style="width:160px;max-width:70%;height:auto;margin:0 auto 8px;display:block"><b>No future loads assigned.</b><span class="sub">Check with your carrier to assign you loads.</span></div>')+'<div style="background:var(--bg2);height:200px"></div>'},
+ board:function(){return hdr('Dashboard')+msg()+(S.loads.some(function(l){return l.demo})?'':'')+(S.loads.length?S.loads.map(loadCard).join(''):'<div class="empty"><b>No available loads.</b><span class="sub">Check back soon.</span></div>')},
+ book:function(){var fs=['pending','upcoming','in_progress','completed','cancelled'],list=S.book.filter(function(b){return b.status===S.filter});
+  return hdr('My Bookings')+msg()+'<div class="tabs">'+fs.map(function(f){return '<button class="tab '+(f===S.filter?'on':'')+'" onclick="S.filter=\''+f+'\';render()">'+({pending:'Pending approval',upcoming:'Upcoming',in_progress:'In progress',completed:'Completed',cancelled:'Cancelled'})[f]+'</button>'}).join('')+'</div>'+(list.length?list.map(bookCard).join(''):'<div class="empty"><span class="sub">No bookings here.</span></div>')},
+ favs:function(){return hdr('Favorites')+msg()+(S.favs.length?S.favs.map(loadCard).join(''):'<div class="empty"><span class="sub">No saved loads yet. Tap ☆ on the Dashboard.</span></div>')},
+ profile:function(){var p=S.profile;if(!p)return hdr('Profile')+'<div class="empty"><span class="sub">Loading…</span></div>';
+  return hdr('Profile')+msg()+'<div class="pad">'+(p.verified?'<h2 style="display:flex;align-items:center;gap:8px">Profile verified<span style="color:#1f9d55;font-size:26px;line-height:1"></span></h2></h2><p class="sub">Your identity and license have been verified.</p><button class="btn out">View badge</button>':'<h2>Verification pending</h2><p class="sub">Your profile is awaiting review. You can book loads once it is verified.</p>')+(p.licenseExpired?'<p class="msg err" style="margin-top:12px">Your driver’s license has expired. Contact support to update it.</p>':'')
+  +'<div class="sec"><h2>Contact information</h2><label>Phone</label><input id="ph" value="'+esc(p.phone)+'"><label>Email</label><input id="em" value="'+esc(p.email)+'"><div style="margin-top:14px"><button class="btn out" onclick="saveP()">Save</button></div></div>'
+  +'<div class="sec"><h2>Driver’s license details</h2><label>License number</label><input value="'+esc(p.licenseNo)+'" disabled><label>Expiration date</label><input value="'+esc(p.licenseExp)+'" disabled><label>First name</label><input value="'+esc(p.first)+'" disabled><label>Last name</label><input value="'+esc(p.last)+'" disabled></div></div>'},
+ help:function(){return hdr('Help & Support')+msg()+'<div class="pad"><h2>FAQ</h2><details><summary>How do I book a load?</summary><p class="sub">Open Dashboard, tap Book and confirm.</p></details><details><summary>Can I cancel a booking?</summary><p class="sub">Open My Bookings and request cancellation on an upcoming booking.</p></details><details><summary>Why can’t I book?</summary><p class="sub">Your profile must be verified and your license must not be expired.</p></details><details><summary>I can’t sign in</summary><p class="sub">Contact support below or ask your carrier to reset your access.</p></details><div class="sec"><h2>Contact support</h2><label>Message</label><input id="sm" maxlength="2000" placeholder="Describe your issue"><div style="margin-top:14px"><button class="btn out" onclick="sendS()">Send</button></div></div></div>'}
+};
+function fld(id,label,type,val,extra){return '<label>'+label+'</label><input id="'+id+'" type="'+type+'" value="'+esc(val||'')+'" '+(extra||'')+'>'}
+function showTerms(){var m=document.createElement('div');m.className='modal';m.id='m';m.innerHTML='<div class="sheet"><h2>Amazon Relay Terms</h2><p class="sub">Placeholder text: replace this with your own terms of service and privacy policy before launch.</p><div class="act"><button class="btn" onclick="closeM()">Close</button></div></div>';document.body.appendChild(m)}
+function setAuth(a){S.auth=a;S.msg=null;render()}
+function login_view(){var f=S.form||{},a=S.auth,h='<div class="auth"><div class="logo"><img src="/logo.svg" alt="Amazon Relay" style="height:30px;display:block;margin:0 auto"></div>'+msg();
+ if(a==='register'){
+  h+='<div class="box"><h1>Create account</h1>'+fld('rf','First name','text',f.first,'autocomplete="given-name"')+fld('rl','Last name','text',f.last,'autocomplete="family-name"')+fld('re','Email','email',f.email,'autocomplete="email"')+fld('rph','Mobile number (optional)','tel',f.phone,'autocomplete="tel"')
+  +fld('rn','Driver’s license number','text',f.licenseNo)+fld('rx','License expiration date','date',f.licenseExp)+fld('rp','Password (8+ characters)','password','','autocomplete="new-password"')+fld('rc','Re-enter password','password','','autocomplete="new-password"')
+  +'<div class="hp" aria-hidden="true"><input id="rw" tabindex="-1" autocomplete="off"></div><div class="chk"><input id="rt" type="checkbox"><label style="margin:0;font-weight:400">I agree to the <span class="lnk" onclick="showTerms()">Amazon Relay Terms</span></label></div>'
+  +'<button class="cont" onclick="register()">Create your Amazon Relay account</button><div class="small">New accounts are reviewed before you can book loads.</div><div class="small">Already have an account? <span class="lnk" onclick="setAuth(\'email\')">Sign in</span></div></div>'}
+ else if(a==='password'){
+  h+='<div class="box"><h1>Sign in</h1><div class="who"><span>'+esc(S.ident)+'</span><span class="lnk" onclick="setAuth(\'email\')">Change</span></div>'+fld('lp','Password','password','','autocomplete="current-password" onkeydown="if(event.key===\'Enter\')login()"')+'<button class="cont" onclick="login()">Sign in</button>'
+  +'<details class="small"><summary class="lnk">Forgot your password?</summary><p>Contact your carrier or Amazon Relay support: an administrator can set a new password for you.</p></details></div>'}
+ else{
+  h+='<div class="box"><h1>Sign in with Amazon Relay</h1>'+fld('aid','Enter mobile number or email','text',S.ident,'autocomplete="username" onkeydown="if(event.key===\'Enter\')cont()"')+'<button class="cont" onclick="cont()">Continue</button>'
+  +'<div class="small">By signing in or creating an account, you agree to the <span class="lnk" onclick="showTerms()">Amazon Relay Terms</span></div>'
+  +'<details class="small"><summary class="lnk">Need help?</summary><p>Forgot your password? Contact your carrier or Amazon Relay support.</p><p>You can sign in with the email or mobile number you registered with.</p></details></div>'
+  +'<div class="dv">New to Amazon Relay?</div><button class="cont alt" onclick="setAuth(\'register\')">Create your Amazon Relay account</button>'}
+ return h+'<div class="foot">© 1996-2026, Amazon.com, Inc. or its affiliates</div></div>'}
+function render(){
+  var app=document.getElementById('app'),nav=document.getElementById('nav');
+  if(!S.me){app.innerHTML=login_view();nav.innerHTML='';return}
+  app.innerHTML=S.loading&&!S.book.length&&S.scr!=='help'?hdr('Amazon Relay')+'<div class="empty"><span class="sub">Loading…</span></div>':V[S.scr]();
+  nav.innerHTML='<span class="dlogo"><img src="/logo.svg" alt="Amazon Relay"></span>'+[['home','Home / My Schedule'],['board','Dashboard'],['book','My Bookings'],['favs','Favorites'],['profile','Profile'],['help','Help & Support']].map(function(i){return '<a onclick="go(\''+i[0]+'\')">'+i[1]+'</a>'}).join('')+(canInstall()?'<a onclick="install()">Install app</a>':'')+'<a onclick="logout()">Logout</a>'}
+function load(quiet){
+  if(!S.me)return render();S.loading=!quiet;render();
+  return Promise.all([api('GET','/api/loads'),api('GET','/api/bookings'),api('GET','/api/favorites'),api('GET','/api/profile')]).then(function(r){S.loads=r[0];S.book=r[1];S.favs=r[2];S.profile=r[3];S.loading=false;render()}).catch(function(e){S.loading=false;fail(e)});
+}
+api('GET','/api/me').then(function(m){S.me=m;load()},function(){render()});
+</script>
+</body>
+</html>

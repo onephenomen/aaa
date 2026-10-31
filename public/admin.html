@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Load Board</title>
+<link rel="icon" type="image/png" href="/icon-192.png">
+<style>
+:root{--teal:#0b4f5c;--blue:#1a73e8;--bg:#fff;--bg2:#f1f3f5;--line:#dde1e5;--tx:#111;--tx2:#6b7280;--red:#b91c1c;--green:#0f9d78}
+@media (prefers-color-scheme:dark){:root{--bg:#15191c;--bg2:#0e1113;--line:#2a3035;--tx:#f2f4f5;--tx2:#9aa3ab;--blue:#4c9aff;--red:#f87171;--green:#2fcf9f}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg2);color:var(--tx);font:15px/1.4 -apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{background:var(--teal);color:#fff;display:flex;align-items:center;gap:16px;padding:12px 20px;flex-wrap:wrap}header b{font-size:18px}header nav{display:flex;gap:4px;flex:1;flex-wrap:wrap}
+header nav button,header .out{background:none;border:0;color:#fff;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:15px}header nav button.on{background:rgba(255,255,255,.2)}
+main{max-width:1100px;margin:0 auto;padding:20px}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.card,.panel{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:16px}.card b{display:block;font-size:26px}.card span{color:var(--tx2)}
+.panel{margin-top:16px}h2{margin:0 0 12px;font-size:18px}.wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:640px}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--tx2);font-weight:600;font-size:13px}
+.btn{border:1px solid var(--line);background:var(--bg);color:var(--tx);border-radius:6px;padding:6px 10px;cursor:pointer;font-size:14px}.btn.p{background:var(--blue);border-color:var(--blue);color:#fff}.btn.d{color:var(--red)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}label{display:block;font-size:13px;color:var(--tx2);margin-bottom:4px}
+input{width:100%;height:38px;border:1px solid var(--line);border-radius:6px;padding:0 10px;font-size:15px;background:var(--bg);color:var(--tx)}input[type=checkbox]{width:auto;height:auto}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;background:var(--bg2)}.tag.ok{color:var(--green)}.tag.no{color:var(--red)}
+#msg{margin:12px 0 0;padding:10px 14px;border-radius:6px;display:none}#msg.ok{display:block;background:#e3f7ef;color:#0b6b50}#msg.err{display:block;background:#fde8e8;color:#9b1c1c}.sub{color:var(--tx2);font-size:13px}
+</style></head>
+<body>
+<header><b>Load Board</b><nav id="nav"></nav><button class="out" onclick="logout()">Logout</button></header>
+<main><div id="msg"></div><div id="v"></div></main>
+<script>
+var tab='dash',D={};
+var TABS=[['dash','Dashboard'],['drivers','Drivers'],['loads','Loads'],['bookings','Bookings'],['support','Support']];
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function say(t,m){var e=document.getElementById('msg');e.className=t;e.textContent=m;if(t==='ok')setTimeout(function(){e.className=''},4000)}
+function api(m,u,b){return fetch(u,{method:m,headers:{'Content-Type':'application/json','X-Requested-With':'flexdrive'},body:b?JSON.stringify(b):undefined,credentials:'same-origin'}).then(function(r){return r.json().catch(function(){return {}}).then(function(j){
+ if(r.status===401){location.href='/admin/login';throw 0}if(r.status===403&&u!=='/api/logout'){say('err','You do not have permission for this action.');throw 0}
+ if(!r.ok){say('err',j.error||'Something went wrong.');throw 0}return j})},function(){say('err','No connection.');throw 0})}
+function money(n){return '$'+(Math.round(n*100)/100).toLocaleString('en-US')}
+function dt(s){return new Date(s).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}
+function nav(){document.getElementById('nav').innerHTML=TABS.map(function(t){return '<button class="'+(t[0]===tab?'on':'')+'" onclick="show(\''+t[0]+'\')">'+t[1]+'</button>'}).join('')}
+function show(t){tab=t;nav();load()}
+function logout(){api('POST','/api/logout').catch(function(){}).then(function(){location.href='/admin/login'})}
+function load(){var u={dash:'/api/admin/stats',drivers:'/api/admin/drivers',loads:'/api/admin/loads',bookings:'/api/admin/bookings',support:'/api/admin/support'}[tab];
+ api('GET',u).then(function(d){D=d;draw()}).catch(function(){})}
+function table(h,rows){return '<div class="wrap"><table><thead><tr>'+h.map(function(x){return '<th>'+x+'</th>'}).join('')+'</tr></thead><tbody>'+(rows.length?rows.join(''):'<tr><td colspan="'+h.length+'" class="sub">Nothing here yet.</td></tr>')+'</tbody></table></div>'}
+function draw(){var v=document.getElementById('v'),h='';
+ if(tab==='dash'){var c=[['Drivers',D.drivers],['Verified',D.verified],['Pending',D.drivers-D.verified],['Loads available',D.loadsAvailable],['Loads booked',D.loadsBooked],['Bookings awaiting approval',D.bookingsPending],['Upcoming bookings',D.bookingsUpcoming],['Booked value',money(D.bookedValue)],['Support requests',D.supportRequests]];
+  h='<div class="cards">'+c.map(function(x){return '<div class="card"><b>'+esc(x[1])+'</b><span>'+x[0]+'</span></div>'}).join('')+'</div>'}
+ if(tab==='drivers'){h='<div class="panel"><h2>Add driver</h2><div class="grid"><div><label>First name</label><input id="df"></div><div><label>Last name</label><input id="dl"></div><div><label>Email</label><input id="de" type="email"></div><div><label>Temporary password (8+)</label><input id="dp" type="text"></div><div><label>Phone</label><input id="dph"></div><div><label>License number</label><input id="dn"></div><div><label>License expires</label><input id="dx" type="date"></div></div><p><button class="btn p" onclick="addDriver()">Create driver</button> <span class="sub">New drivers start unverified.</span></p></div>'
+  +'<div class="panel"><h2>Drivers</h2>'+table(['Name','Email','License','Status','Bookings',''],D.map(function(d){return '<tr><td>'+esc(d.first+' '+d.last)+'<div class="sub">'+esc(d.phone)+'</div></td><td>'+esc(d.email)+'</td><td>'+esc(d.licenseNo)+'<div class="sub">exp '+esc(d.licenseExp||'—')+'</div></td><td><span class="tag '+(d.verified?'ok':'no')+'">'+(d.verified?'Verified':'Pending')+'</span></td><td>'+d.bookings+'</td><td>'+(d.verified?'<button class="btn" onclick="ver('+d.id+',0)">Unverify</button>':'<button class="btn p" onclick="ver('+d.id+',1)">Verify</button>')+' <button class="btn" onclick="resetPw('+d.id+')">Reset password</button> <button class="btn d" onclick="delDriver('+d.id+',\''+esc(d.first+' '+d.last).replace(/'/g,"\\'")+'\')">Delete</button></td></tr>'}))+'</div>'}
+ if(tab==='loads'){h='<div class="panel"><h2>Create load</h2><div class="grid"><div><label>City</label><input id="lc"></div><div><label>State</label><input id="ls"></div><div><label>Station code</label><input id="lst"></div><div><label>Start</label><input id="lb" type="datetime-local"></div><div><label>End</label><input id="le" type="datetime-local"></div><div><label>Total pay ($)</label><input id="lt" type="number" min="0"></div><div><label>Pay per block ($)</label><input id="lp" type="number" min="0"></div><div><label>Blocks</label><input id="ln" type="number" min="1"></div><div><label>Hours</label><input id="lh" placeholder="6:00–18:00"></div><div><label>Drivers (1 = solo)</label><input id="ld" type="number" min="1" value="1"></div><div><label>Truck</label><input id="lk"></div><div><label>Equipment</label><input id="lq"></div></div><p><button class="btn p" onclick="addLoad()">Publish load</button></p></div>'
+  +'<div class="panel"><h2>All loads</h2>'+table(['Route','When','Pay','Details','Status',''],D.map(function(l){return '<tr><td>'+esc(l.city+', '+l.state)+'<div class="sub">'+esc(l.station)+(l.demo?' · demo':'')+'</div></td><td>'+dt(l.start)+'<div class="sub">to '+dt(l.end)+'</div></td><td>'+money(l.total)+'<div class="sub">'+money(l.perBlock)+'/block</div></td><td>'+l.blocks+' blocks · '+(l.team?'team '+l.drivers:'solo')+'<div class="sub">'+esc(l.truck)+'</div></td><td><span class="tag">'+esc(l.status)+'</span>'+(l.bookedBy?'<div class="sub">'+esc(l.bookedBy)+'</div>':'')+'</td><td><button class="btn d" onclick="delLoad('+l.id+')">Delete</button></td></tr>'}))+'</div>'}
+ if(tab==='bookings'){var pend=D.filter(function(b){return b.status==='pending'}).length;
+  h='<div class="panel"><h2>All bookings'+(pend?' <span class="tag no">'+pend+' awaiting approval</span>':'')+'</h2>'+table(['#','Driver','Load','Pay','Status',''],D.map(function(b){var lbl={pending:'Pending approval',in_progress:'In progress'}[b.status]||b.status;return '<tr><td>'+b.id+'</td><td>'+esc(b.driver)+'<div class="sub">'+esc(b.driverEmail)+'</div></td><td>'+esc(b.load.city+', '+b.load.state)+'<div class="sub">'+dt(b.load.start)+'</div></td><td>'+money(b.load.total)+'</td><td><span class="tag '+(b.status==='pending'?'no':'')+'">'+esc(lbl)+'</span></td><td>'+(b.status==='pending'?'<button class="btn p" onclick="approveB('+b.id+')">Approve</button> ':'')+((b.status==='upcoming'||b.status==='pending')?'<button class="btn d" onclick="cancelB('+b.id+')">'+(b.status==='pending'?'Reject':'Cancel')+'</button>':'')+'</td></tr>'}))+'</div>'}
+ if(tab==='support')h='<div class="panel"><h2>Support requests</h2>'+table(['When','Driver','Message'],D.map(function(s){return '<tr><td>'+dt(s.created)+'</td><td>'+esc(s.driver)+'<div class="sub">'+esc(s.email)+'</div></td><td>'+esc(s.message)+'</td></tr>'}))+'</div>'
+ v.innerHTML=h}
+function val(i){return document.getElementById(i).value}
+function addDriver(){api('POST','/api/admin/drivers',{first:val('df'),last:val('dl'),email:val('de'),password:val('dp'),phone:val('dph'),licenseNo:val('dn'),licenseExp:val('dx')}).then(function(){say('ok','Driver created. Share the email and temporary password with them.');load()}).catch(function(){})}
+function ver(id,on){api('POST','/api/admin/drivers/'+id+(on?'/verify':'/unverify')).then(function(){say('ok',on?'Driver verified.':'Verification removed.');load()}).catch(function(){})}
+function resetPw(id){var p=prompt('New temporary password for this driver (8+ characters):');if(!p)return;api('POST','/api/admin/drivers/'+id+'/reset-password',{password:p}).then(function(){say('ok','Password reset. Tell the driver the new password; their old sessions were signed out.')}).catch(function(){})}
+function delDriver(id,name){if(!confirm('Delete driver '+name+'? This cannot be undone.'))return;api('DELETE','/api/admin/drivers/'+id).then(function(){say('ok','Driver deleted.');load()}).catch(function(){})}
+function iso(i){var v=val(i);return v?new Date(v).toISOString():''}
+function addLoad(){api('POST','/api/admin/loads',{city:val('lc'),state:val('ls'),station:val('lst'),start:iso('lb'),end:iso('le'),total:+val('lt'),per_block:+val('lp'),blocks:parseInt(val('ln'),10),hours:val('lh'),drivers:parseInt(val('ld'),10)||1,team:(parseInt(val('ld'),10)||1)>1,truck:val('lk'),equipment:val('lq')}).then(function(){say('ok','Load published.');load()}).catch(function(){})}
+function delLoad(id){if(confirm('Delete this load?'))api('DELETE','/api/admin/loads/'+id).then(function(){say('ok','Load deleted.');load()}).catch(function(){})}
+function cancelB(id){var msg=D.find&&D.find(function(b){return b.id===id;});var isPending=msg&&msg.status==='pending';if(confirm(isPending?'Reject this booking request? The load becomes available again.':'Cancel this booking? The load becomes available again.'))api('POST','/api/admin/bookings/'+id+'/cancel').then(function(){say('ok',isPending?'Booking rejected.':'Booking cancelled.');load()}).catch(function(){})}
+function approveB(id){if(confirm('Approve this booking?'))api('POST','/api/admin/bookings/'+id+'/approve').then(function(){say('ok','Booking approved.');load()}).catch(function(){})}
+nav();load();
+</script></body></html>

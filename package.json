@@ -1,0 +1,8 @@
+{
+  "name": "flexdrive",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FlexDrive Driver App: zero-dependency Node 22+ server with SQLite",
+  "scripts": { "seed": "node seed.js", "start": "node server.js", "test": "node test.js" },
+  "engines": { "node": ">=22.5" }
+}
